@@ -3,7 +3,7 @@
 A workflow to run seqcover on NeoSeq samples. 
 
 [NeoSeq](https://uofuhealth.utah.edu/center-genomic-medicine/research/utah-neoseq-project.php) is a initiative at the University of Utah aimed
-at providing *RAPID NICU Genetic Sequencing, Analysis, and Diagnosis* for critically ill infants. This workflow runs the [seqcover](https://github.com/brentp/seqcover)
+at providing **RAPID NICU Genetic Sequencing, Analysis, and Diagnosis** for critically ill infants. This workflow runs the [seqcover](https://github.com/brentp/seqcover)
 program, the successor to [mosdepth_region_vis](https://github.com/mikecormier/mosdepth_region_vis), to provide a interactive html report 
 to explore difference in coverage and coverage QC for genes of interest. 
 
@@ -141,7 +141,7 @@ Here is an example of running the workflow using this GitHub repo.
 ```
 module load singularity 
 
-nextflow run mikecormier/neoseq-seqcover-nf -revision main \
+nextflow run mikecormier/neoseq-seqcover-nf -revision main -profile singularity \
     --crams "path/to/crams/*.crams" \
     --reference path/to/reference/reference.fa \
     --d4background "path/to/d4/coverage/files/*.d4" \
@@ -170,7 +170,7 @@ the workflow from the last successful process. To do this one needs to add the `
 command. 
 
 ```
-nextflow run mikecormier/neoseq-seqcover-nf -revision main -resume \
+nextflow run mikecormier/neoseq-seqcover-nf -revision main -profile singularity -resume \
     --crams "path/to/crams/*.crams" \
     --reference path/to/reference/reference.fa \
     --d4background "path/to/d4/coverage/files/*.d4" \
