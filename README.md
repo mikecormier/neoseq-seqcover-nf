@@ -153,13 +153,7 @@ nextflow run mikecormier/neoseq-seqcover-nf -revision main -profile singularity 
 
 The `-revision main` argument is required in order to run it from the "main" GitHub repo branch.
 
----
-**NOTE**
-
-The `--crams` and the `--d4background` parameters require that path to be in quotes. If the path
-is not provided in quotes then bash will expand the directory prior to the required 
-nextflow expansion, causing an issue with collecting the cram and d4 files.
----
+> **_NOTE:_** The `--crams` and the `--d4background` parameters require that path to be in quotes. If the path is not provided in quotes then bash will expand the directory prior to the required nextflow expansion, causing an issue with collecting the cram and d4 files.
 
 ### Resuming failed workflows 
 
