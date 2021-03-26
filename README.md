@@ -90,8 +90,6 @@ Optional:
                       More info is available at:
                       https://github.com/brentp/seqcover#outlier
                       Default: 5
-
-
 ```
 
 ### Containers
@@ -130,7 +128,7 @@ This workflow does not need to be downloaded in order to run. Although one can c
 and run it locally, nextflow is capable of running workflows from GitHub repositories. 
 
 The only software requirements are
-  - nextflow
+  - nextflow: version >= 20.10.0
   - docker or singularity 
 
 To install nextflow see the [nextflow installation page](https://www.nextflow.io/docs/latest/getstarted.html#installation)
