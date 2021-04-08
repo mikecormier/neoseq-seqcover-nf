@@ -137,7 +137,6 @@ process run_mosdepth {
 
     script:
     """
-    echo $reference
     mosdepth -f $reference -x -t ${task.cpus} --d4 ${cram.getSimpleName()} $cram
     """
 }
@@ -184,7 +183,6 @@ process seqcover_report {
 
     genome_flag = hg19 ? "--hg19" : ""
     """
-    echo $reference
     seqcover report --fasta $reference --background $background --genes $genes $genome_flag $d4
     """
 }
