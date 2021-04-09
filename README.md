@@ -190,8 +190,8 @@ nextflow run mikecormier/neoseq-seqcover-nf -revision main -profile singularity 
 
 The ability to add a background to the report allows for improved coverage QC. One can eliminate potential systematic or biological errors or 
 identify areas of interest when comparing a background of sample to a current case. This workflow allows different background parameters to 
-fit the needs of the user. At least 4 samples that are different then that active case samples are needed in order to create a background. 
-The more samples you have to create the background the more accurate it will be. 
+fit the needs of the user. At least 4 samples that are **different** then that active case samples are needed in order to create a background. 
+**You should not use the active case samples to create the background**. The more samples you have to create the background the more accurate it will be. 
 
 > **_NOTE:_** The background samples should have been prepared and sequenced the same way as the activate case samples were. That is, you want to use a background of samples that have had the same library prep, capture kit, sequencing protocol, and even the same sequencer and type of sequence flow cells. 
 
@@ -199,15 +199,15 @@ The more samples you have to create the background the more accurate it will be.
 
 2) `--prebuiltd4`: This argument is used to use a background file that was previously created. 
 
-3) SKIP: This argument allows to you skip the background step completely. The final report will not contain a background to compare against.   
+3) SKIP: This argument allows to you skip the background step completely. The final report will **not** contain a background to compare against.   
 
 It should be noted that the more samples used to create the background the slower the process will be. This is because each sample needs to be parsed at a per-base level in order to identify the user specified percentile background value. 
 
 ### d4 Files
 
-This workflow uses the [d4 utily](https://github.com/38/d4-format) for per-base coverage files. This file format provides a smaller coverage 
+This workflow uses the [d4 utility](https://github.com/38/d4-format) for per-base coverage files. This file format provides a smaller coverage 
 file compared to bed and bigwig, as well as a speedup in data access. Mosdepth and seqcover have been updated to use this format to improve
-speed and storage of these per-base coverage files. Although both mosdepth and seqcover can create and use bgzipped bed files, d4 optimizes 
+speed and storage of these per-base coverage files. Although both mosdepth and seqcover can create or use bgzipped bed files, respectful, d4 optimizes 
 the process. Therefore, this workflow will use d4 files.  
 
 ### Example config profile 
