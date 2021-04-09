@@ -16,46 +16,58 @@ if (params.help) {
 
     Required arguments:
     -------------------
-    --crams               NeoSeq sample's aligned sequences in .bam and/or .cram format.
-                          Indexes (.bai/.crai) must be present.
-                          NOTE: the file path must be in qutoes. 
-                          e.g. ` "path/to/crams/*.carm" ` If qutoes are not used the
-                          workflow will only use the first cram file.
+    --crams                   NeoSeq sample's aligned sequences in .bam and/or .cram format.
+                              Indexes (.bai/.crai) must be present.
+                              NOTE: the file path must be in qutoes. 
+                              e.g. ` "path/to/crams/*.carm" ` If qutoes are not used the
+                              workflow will only use the first cram file.
 
-    --reference           Reference FASTA file. Index (.fai) must exist in same directory.
+    --reference               Reference FASTA file. Index (.fai) must exist in same directory.
 
-    --d4background        The directory path to the NeoSeq sample d4 per base coverage 
-                          files to use for background coverage. 
-                          NOTE: the file path must be in qutoes. 
-                          e.g. ` "path/to/d4background/*.d4" ` If qutoes are not used the
-                          workflow will fail.
 
+    One required background argument:
+    ---------------------------------
+
+    --d4background            The directory path to the NeoSeq sample d4 per base coverage 
+                              files to use for background coverage. 
+                              NOTE: the file path must be in qutoes. 
+                              e.g. ` "path/to/d4background/*.d4" ` If qutoes are not used the
+                              workflow will fail.
+                              NOTE: Only the `--d4background` or `--prebuiltd4` parameter is 
+                              required. If both are provided only the `--prebuiltd4` will be used.
+
+    --prebuiltd4              The directory path and file name of a prebuilt d4background. This 
+                              can be used instead of creating a new d4 background when it is 
+                              available and sufficient for your needs. 
+                              NOTE: Only the `--d4background` or `--prebuiltd4` parameter is 
+                              required. If both are provided only the `--prebuiltd4` will be used.
+        
 
     
-    One required argument:
-    ----------------------
-    --genesfile           A file of genes with one gene per line across which to show 
-                          coverage. e.g. "gene_list.txt". Required if '--geneslist' is
-                          not used. If both '--genesfile' and '--geneslist' are provided, 
-                          the two gene sets will be combined. 
+    One required gene list argument:
+    --------------------------------
+    --genesfile               A file of genes with one gene per line across which to show 
+                              coverage. e.g. "gene_list.txt". Required if '--geneslist' is
+                              not used. If both '--genesfile' and '--geneslist' are provided, 
+                              the two gene sets will be combined. 
     
-    --geneslist           A comma separated list of genes across which to show coverage, 
-                          e.g. "PIGA,KCNQ2,ARX,DNM1,SLC25A22,CDKL5". Required if `--genefile` 
-                          is not used. If both '--genesfile' and '--geneslist' are provided, 
-                          the two gene sets will be combined.
+    --geneslist               A comma separated list of genes across which to show coverage, 
+                              e.g. "PIGA,KCNQ2,ARX,DNM1,SLC25A22,CDKL5". Required if `--genefile` 
+                              is not used. If both '--genesfile' and '--geneslist' are provided, 
+                              the two gene sets will be combined.
 
     Optional:
     ---------
-    --outdir              The directory for output seqcover report.
-                          Default: '/.results'
+    --outdir                  The directory for output seqcover report.
+                              Default: '/.results'
 
-    --cpus                The number of cpus to use for `mosdepth` calls.
-                          Default: 4
+    --cpus                    The number of cpus to use for `mosdepth` calls.
+                              Default: 4
 
-    --percentile          The background percentile used in seqcover report.
-                          More info is available at:
-                          https://github.com/brentp/seqcover#outlier
-                          Default: 5
+    --percentile              The background percentile used in seqcover report.
+                              More info is available at:
+                              https://github.com/brentp/seqcover#outlier
+                              Default: 5
     -----------------------------------------------------------------------
     """.stripIndent()
     exit 0
@@ -66,6 +78,7 @@ params.reference = false
 params.genesfile = false
 params.geneslist = false
 params.d4background = false
+params.prebuiltd4 = false
 params.outdir = './results'
 params.cpus = 4
 params.percentile = 5
@@ -81,9 +94,11 @@ if(!params.reference) {
     exit 1, "--reference argument is required"
 }
 
-if(!params.d4background) {
-    exit 1, "--d4background argument to previous d4 per base coverage files, '/path/to/NeoSeq/d4/*.d4', is required"
+if(!params.d4background && !params.prebuiltd4) {
+    exit 1, "The --d4background, '/path/to/NeoSeq/d4/*.d4', or the --prebuiltd4, '/path/to/NeoSeq/d4/prebuilt_p5.d4', aurgument is required"
 }
+
+def prebuiltd4 = !params.prebuiltd4 ? false : true
 
 if(!params.genesfile && !params.geneslist) {
     exit 1, "--genesfiles or --geneslist argument, e.g. 'gene_list.txt' or 'PIGA,KCNQ2,ARX,DNM1', is required"
@@ -143,7 +158,10 @@ process run_mosdepth {
 
 
 // Create background file
-background_d4s = channel.fromPath(params.d4background).collect()
+if (!prebuiltd4){
+    background_d4s = channel.fromPath(params.d4background).collect()
+}
+
 
 process seqcover_background {
     container "brwnj/seqcover-nf:v0.1.0"
@@ -151,6 +169,7 @@ process seqcover_background {
 
     input:
     path(d4s)
+    val(prebuilt_d4)
     path(reference)
     val(percentile)
 
@@ -158,9 +177,16 @@ process seqcover_background {
     path("seqcover/*.d4"), emit: d4
 
     script:
-    """
-    seqcover generate-background -p $percentile -f $reference -o seqcover/ $d4s
-    """
+    if (prebuilt_d4)
+        """
+        mkdir seqcover
+        cp $d4s seqcover/
+        """
+
+    else
+        """
+        seqcover generate-background -p $percentile -f $reference -o seqcover/ $d4s
+        """
 }
 
 
@@ -190,7 +216,7 @@ process seqcover_report {
 // Workflow order
 workflow {
     run_mosdepth(crams, crais, params.reference)
-    seqcover_background(background_d4s, params.reference, params.percentile)
+    seqcover_background(prebuiltd4 ? params.prebuiltd4 : background_d4s, prebuiltd4, params.reference, params.percentile)
     seqcover_report(run_mosdepth.output.d4.collect(), seqcover_background.output.d4, params.reference, genes_string, params.hg19)
 }
 

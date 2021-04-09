@@ -50,46 +50,59 @@ https://github.com/brentp/seqcover
 
 Required arguments:
 -------------------
---crams               NeoSeq sample's aligned sequences in .bam and/or .cram format.
-                      Indexes (.bai/.crai) must be present.
-                      NOTE: the file path must be in quotes. 
-                      e.g. ` "path/to/crams/*.cram" ` If quotes are not used the
-                      workflow will only use the first cram file.
+--crams                   NeoSeq sample's aligned sequences in .bam and/or .cram format.
+                          Indexes (.bai/.crai) must be present.
+                          NOTE: the file path must be in qutoes. 
+                          e.g. ` "path/to/crams/*.carm" ` If qutoes are not used the
+                          workflow will only use the first cram file.
 
---reference           Reference FASTA file. Index (.fai) must exist in same directory.
-
---d4background        The directory path to the NeoSeq sample d4 per base coverage 
-                      files to use for background coverage. 
-                      NOTE: the file path must be in quotes. 
-                      e.g. ` "path/to/d4background/*.d4" ` If quotes are not used the
-                      workflow will fail.
+--reference               Reference FASTA file. Index (.fai) must exist in same directory.
 
 
+One required background argument:
+---------------------------------
 
-One required argument:
-----------------------
---genesfile           A file of genes with one gene per line across which to show 
-                      coverage. e.g. "gene_list.txt". Required if '--geneslist' is
-                      not used. If both '--genesfile' and '--geneslist' are provided, 
-                      the two gene sets will be combined. 
+--d4background            The directory path to the NeoSeq sample d4 per base coverage 
+                          files to use for background coverage. 
+                          NOTE: the file path must be in qutoes. 
+                          e.g. ` "path/to/d4background/*.d4" ` If qutoes are not used the
+                          workflow will fail.
+                          NOTE: Only the `--d4background` or `--prebuiltd4` parameter is 
+                          required. If both are provided only the `--prebuiltd4` will be used.
 
---geneslist           A comma separated list of genes across which to show coverage, 
-                      e.g. "PIGA,KCNQ2,ARX,DNM1,SLC25A22,CDKL5". Required if `--genesfile` 
-                      is not used. If both '--genesfile' and '--geneslist' are provided, 
-                      the two gene sets will be combined.
+--prebuiltd4              The directory path and file name of a prebuilt d4background. This 
+                          can be used instead of creating a new d4 background when it is 
+                          available and sufficient for your needs. 
+                          NOTE: Only the `--d4background` or `--prebuiltd4` parameter is 
+                          required. If both are provided only the `--prebuiltd4` will be used.
+
+
+
+One required gene list argument:
+--------------------------------
+--genesfile               A file of genes with one gene per line across which to show 
+                          coverage. e.g. "gene_list.txt". Required if '--geneslist' is
+                          not used. If both '--genesfile' and '--geneslist' are provided, 
+                          the two gene sets will be combined. 
+
+--geneslist               A comma separated list of genes across which to show coverage, 
+                          e.g. "PIGA,KCNQ2,ARX,DNM1,SLC25A22,CDKL5". Required if `--genefile` 
+                          is not used. If both '--genesfile' and '--geneslist' are provided, 
+                          the two gene sets will be combined.
 
 Optional:
 ---------
---outdir              The directory for output seqcover report.
-                      Default: '/.results'
+--outdir                  The directory for output seqcover report.
+                          Default: '/.results'
 
---cpus                The number of cpus to use for `mosdepth` calls.
-                      Default: 4
+--cpus                    The number of cpus to use for `mosdepth` calls.
+                          Default: 4
 
---percentile          The background percentile used in seqcover report.
-                      More info is available at:
-                      https://github.com/brentp/seqcover#outlier
-                      Default: 5
+--percentile              The background percentile used in seqcover report.
+                          More info is available at:
+                          https://github.com/brentp/seqcover#outlier
+                          Default: 5
+-----------------------------------------------------------------------
 ```
 
 ### Containers
@@ -172,6 +185,30 @@ nextflow run mikecormier/neoseq-seqcover-nf -revision main -profile singularity 
     --outdir path/to/results/
 ```
 
+
+### Background
+
+The ability to add a background to the report allows for improved coverage QC. One can eliminate potential systematic or biological errors or 
+identify areas of interest when comparing a background of sample to a current case. This workflow allows different background parameters to 
+fit the needs of the user. At least 4 samples that are different then that active case samples are needed in order to create a background. 
+The more samples you have to create the background the more accurate it will be. 
+
+> **_NOTE:_** The background samples should have been prepared and sequenced the same way as the activate case samples were. That is, you want to use a background of samples that have had the same library prep, capture kit, sequencing protocol, and even the same sequencer and type of sequence flow cells. 
+
+1) `--d4background `: This argument is used to create a new background from existing samples. The background will be created based on the `--percentile` parameter input or default. 
+
+2) `--prebuiltd4`: This argument is used to use a background file that was previously created. 
+
+3) SKIP: This argument allows to you skip the background step completely. The final report will not contain a background to compare against.   
+
+It should be noted that the more samples used to create the background the slower the process will be. This is because each sample needs to be parsed at a per-base level in order to identify the user specified percentile background value. 
+
+### d4 Files
+
+This workflow uses the [d4 utily](https://github.com/38/d4-format) for per-base coverage files. This file format provides a smaller coverage 
+file compared to bed and bigwig, as well as a speedup in data access. Mosdepth and seqcover have been updated to use this format to improve
+speed and storage of these per-base coverage files. Although both mosdepth and seqcover can create and use bgzipped bed files, d4 optimizes 
+the process. Therefore, this workflow will use d4 files.  
 
 ### Example config profile 
 
