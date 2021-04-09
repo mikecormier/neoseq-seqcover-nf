@@ -123,7 +123,7 @@ crams = channel.fromPath(params.crams)
 crais = crams.map { it -> it + ("${it}".endsWith('.cram') ? '.crai' : '.bai') }
 
 process run_mosdepth {
-    container "brwnj/seqcover-nf:v0.1.0"
+    container "mikecormier/neoseq-seqcover-nf:v0.3.0"
     publishDir "${params.outdir}/mosdepth"
     cpus params.cpus
 
@@ -146,7 +146,7 @@ process run_mosdepth {
 background_d4s = channel.fromPath(params.d4background).collect()
 
 process seqcover_background {
-    container "brwnj/seqcover-nf:v0.1.0"
+    container "mikecormier/neoseq-seqcover-nf:v0.3.0"
     publishDir params.outdir
 
     input:
@@ -166,7 +166,7 @@ process seqcover_background {
 
 // Create seqcover html report
 process seqcover_report {
-    container "brwnj/seqcover-nf:v0.1.0"
+    container "mikecormier/neoseq-seqcover-nf:v0.3.0"
     publishDir params.outdir
 
     input:
